@@ -22,7 +22,7 @@ interface CartItem {
 }
 
 interface User {
-  id: string;
+  id: number;
   username: string;
 }
 
@@ -63,7 +63,7 @@ function App() {
       });
       const data = await res.json();
       if (data.id) {
-        setUser(data);
+        setUser({ id: data.id, username: data.username });
       } else {
         alert(data.message || "Fel användarnamn eller lösenord");
       }

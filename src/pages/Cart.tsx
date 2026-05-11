@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface CartItem {
   id: string;
   name: string;
@@ -10,21 +12,43 @@ interface CartProps {
   cart: CartItem[];
   onBack: () => void;
   onRemove: (id: string) => void;
-  user: { id: string; username: string } | null;
+  user: { id: number; username: string } | null;
 }
 
 function Cart({ cart, onBack, onRemove, user }: CartProps) {
+  const [loading, setLoading] = useState(false);
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       alert("Du måste logga in först!");
       return;
     }
-    alert(
-      `Köp genomfört!\nAnvändare: ${user.username}\nTotalt: ${total} kr\n\nTack för ditt köp!`,
-    );
-    onBack();
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/users/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          username: user.username,
+          items: cart
+        }),
+      });
+      
+      if (res.ok) {
+        const order = await res.json();
+        alert(
+          `Köp genomfört!\n\nOrder ID: ${order.id}\nAnvändare: ${user.username} (ID: ${user.id})\nTotalt: ${total} kr\n\nTack för ditt köp!`
+        );
+        onBack();
+      }
+    } catch (err) {
+      alert("Något gick fel");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,9 +115,10 @@ function Cart({ cart, onBack, onRemove, user }: CartProps) {
 
               <button
                 onClick={handleCheckout}
+                disabled={loading}
                 className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg text-lg font-bold"
               >
-                Godkänn köp
+                {loading ? "Laddar..." : "Godkänn köp"}
               </button>
             </div>
           </>
