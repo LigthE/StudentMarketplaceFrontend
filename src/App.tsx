@@ -20,7 +20,7 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
-  type: 'buy' | 'rent';
+  type: "buy" | "rent";
   months?: number;
 }
 
@@ -32,7 +32,6 @@ interface User {
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
@@ -52,8 +51,6 @@ function App() {
       setProducts(data);
     } catch (err) {
       console.log("API not reachable");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -93,7 +90,7 @@ function App() {
       id: Date.now().toString(),
       name: item.name,
       price: item.price,
-      type: 'buy'
+      type: "buy",
     };
     setCart([...cart, cartItem]);
     alert(`La till ${item.name} i varukorgen!`);
@@ -111,15 +108,15 @@ function App() {
       id: Date.now().toString(),
       name: item.name,
       price: item.rentPrice * monthsNum,
-      type: 'rent',
-      months: monthsNum
+      type: "rent",
+      months: monthsNum,
     };
     setCart([...cart, cartItem]);
     alert(`La till ${item.name} (${monthsNum} månader) i varukorgen!`);
   };
 
   const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item.id !== id));
+    setCart(cart.filter((item) => item.id !== id));
   };
 
   const handleDelete = async (id: any) => {
@@ -128,7 +125,7 @@ function App() {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
       if (res.ok) {
         alert("Product deleted!");
-        setRefresh(k => k + 1);
+        setRefresh((k) => k + 1);
       }
     } catch (err) {
       alert("Failed to delete product");
@@ -136,11 +133,9 @@ function App() {
   };
 
   const handleProductChange = () => {
-    setRefresh(k => k + 1);
+    setRefresh((k) => k + 1);
     navigate("/");
   };
-
-  if (loading) return <div className="loading">Laddar...</div>;
 
   return (
     <div className="app">
@@ -148,21 +143,41 @@ function App() {
         <h1>Student Marketplace</h1>
         <p>Hitta tech till bra pris</p>
 
-        <nav style={{ display: 'flex', gap: '10px', margin: '10px 0' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'blue' }}>Home</Link>
-          <Link to="/add-product" style={{ textDecoration: 'none', color: 'blue' }}>Sell Product</Link>
+        <nav style={{ display: "flex", gap: "10px", margin: "10px 0" }}>
+          <Link to="/" style={{ textDecoration: "none", color: "blue" }}>
+            Home
+          </Link>
+          <Link
+            to="/add-product"
+            style={{ textDecoration: "none", color: "blue" }}
+          >
+            Sell Product
+          </Link>
         </nav>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div>
-            <button onClick={() => setShowCart(true)} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowCart(true)}
+              style={{ position: "relative" }}
+            >
               🛒 Varukorg ({cart.length})
             </button>
           </div>
           {user ? (
             <div className="user-info">
-              <span>Välkommen {user.username} (ID: {user.id})</span>
-              <button onClick={handleLogout} className="btn-logout">Logga ut</button>
+              <span>
+                Välkommen {user.username} (ID: {user.id})
+              </span>
+              <button onClick={handleLogout} className="btn-logout">
+                Logga ut
+              </button>
             </div>
           ) : null}
         </div>
@@ -191,52 +206,25 @@ function App() {
         )}
       </header>
 
-      {showCart && <Cart cart={cart} onBack={() => setShowCart(false)} onRemove={removeFromCart} user={user} />}
+      {showCart && (
+        <Cart
+          cart={cart}
+          onBack={() => setShowCart(false)}
+          onRemove={removeFromCart}
+          user={user}
+        />
+      )}
 
       <Routes>
-        <Route path="/" element={
-          <main>
-            <h2>Datorer till salu</h2>
-            <div className="products-grid">
-              {products.map((product) => (
-                <div key={product.id} className="product-card">
-                  <img src={product.image} alt={product.name} width="150" />
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                  <p className="category">{product.category}</p>
-                  <div className="prices">
-                    <span>Köp: {product.price} kr</span>
-                    <span>Hyra: {product.rentPrice} kr/mån</span>
-                  </div>
-                  <div className="buttons">
-                    <button onClick={() => handleBuy(product)} className="btn-buy">
-                      Köp
-                    </button>
-                    <button onClick={() => handleRent(product)} className="btn-rent">
-                      Hyra
-                    </button>
-                    {user && (
-                      <>
-                        <button onClick={() => navigate(`/edit-product/${product.id}`, { state: { product } })} className="btn-edit">
-                          redigera
-                        </button>
-                        <button onClick={() => handleDelete(product.id)} className="btn-delete">
-                          Ta bort
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <h2>Dina produkter i butiken</h2>
-            {products.length === 0 ? (
-              <p>Inga produkter än</p>
-            ) : (
+        <Route
+          path="/"
+          element={
+            <main>
+              <h2>Datorer till salu</h2>
               <div className="products-grid">
                 {products.map((product) => (
                   <div key={product.id} className="product-card">
+                    <img src={product.image} alt={product.name} width="150" />
                     <h3>{product.name}</h3>
                     <p>{product.description}</p>
                     <p className="category">{product.category}</p>
@@ -244,19 +232,81 @@ function App() {
                       <span>Köp: {product.price} kr</span>
                       <span>Hyra: {product.rentPrice} kr/mån</span>
                     </div>
-                    {user && (
-                      <button onClick={() => handleBuy(product)} className="btn-buy">
+                    <div className="buttons">
+                      <button
+                        onClick={() => handleBuy(product)}
+                        className="btn-buy"
+                      >
                         Köp
                       </button>
-                    )}
+                      <button
+                        onClick={() => handleRent(product)}
+                        className="btn-rent"
+                      >
+                        Hyra
+                      </button>
+                      {user && (
+                        <>
+                          <button
+                            onClick={() =>
+                              navigate(`/edit-product/${product.id}`, {
+                                state: { product },
+                              })
+                            }
+                            className="btn-edit"
+                          >
+                            redigera
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="btn-delete"
+                          >
+                            Ta bort
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-          </main>
-        } />
-        <Route path="/add-product" element={<AddProduct onProductAdded={handleProductChange} />} />
-        <Route path="/edit-product/:id" element={<EditProduct onProductUpdated={handleProductChange} />} />
+
+              <h2>Dina produkter i butiken</h2>
+              {products.length === 0 ? (
+                <p>Inga produkter än</p>
+              ) : (
+                <div className="products-grid">
+                  {products.map((product) => (
+                    <div key={product.id} className="product-card">
+                      <h3>{product.name}</h3>
+                      <p>{product.description}</p>
+                      <p className="category">{product.category}</p>
+                      <div className="prices">
+                        <span>Köp: {product.price} kr</span>
+                        <span>Hyra: {product.rentPrice} kr/mån</span>
+                      </div>
+                      {user && (
+                        <button
+                          onClick={() => handleBuy(product)}
+                          className="btn-buy"
+                        >
+                          Köp
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </main>
+          }
+        />
+        <Route
+          path="/add-product"
+          element={<AddProduct onProductAdded={handleProductChange} />}
+        />
+        <Route
+          path="/edit-product/:id"
+          element={<EditProduct onProductUpdated={handleProductChange} />}
+        />
       </Routes>
     </div>
   );
