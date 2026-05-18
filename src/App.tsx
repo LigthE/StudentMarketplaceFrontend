@@ -218,10 +218,10 @@ function App() {
                     {user && (
                       <>
                         <button onClick={() => navigate(`/edit-product/${product.id}`, { state: { product } })} className="btn-edit">
-                          Edit
+                          redigera
                         </button>
                         <button onClick={() => handleDelete(product.id)} className="btn-delete">
-                          Delete
+                          Ta bort
                         </button>
                       </>
                     )}

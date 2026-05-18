@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
-  background-color: #e69edc;
+  background-color: #d8dcdf;
   border-radius: 12px;
 }
 
@@ -126,12 +126,12 @@ button {
 }
 
 .btn-delete {
-  background: #f44336;
+  background: #ff1100;
   color: white;
 }
 
 .btn-delete:hover {
-  background: #d32f2f;
+  background: #ff0000;
 }
 
 .btn-logout {
