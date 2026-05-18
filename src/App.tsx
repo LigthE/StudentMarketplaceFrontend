@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import Cart from "./pages/Cart";
+import AddProduct from "./pages/AddProduct";
+import EditProduct from "./pages/EditProduct";
 import "./App.css";
 
 interface Product {
@@ -35,10 +38,12 @@ function App() {
   const [isLogin, setIsLogin] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [refresh]);
 
   const fetchProducts = async () => {
     try {
@@ -117,17 +122,36 @@ function App() {
     setCart(cart.filter(item => item.id !== id));
   };
 
-  if (loading) return <div className="loading">Laddar...</div>;
+  const handleDelete = async (id: any) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        alert("Product deleted!");
+        setRefresh(k => k + 1);
+      }
+    } catch (err) {
+      alert("Failed to delete product");
+    }
+  };
 
-  if (showCart) {
-    return <Cart cart={cart} onBack={() => setShowCart(false)} onRemove={removeFromCart} user={user} />;
-  }
+  const handleProductChange = () => {
+    setRefresh(k => k + 1);
+    navigate("/");
+  };
+
+  if (loading) return <div className="loading">Laddar...</div>;
 
   return (
     <div className="app">
       <header>
         <h1>Student Marketplace</h1>
         <p>Hitta tech till bra pris</p>
+
+        <nav style={{ display: 'flex', gap: '10px', margin: '10px 0' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'blue' }}>Home</Link>
+          <Link to="/add-product" style={{ textDecoration: 'none', color: 'blue' }}>Sell Product</Link>
+        </nav>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -167,55 +191,73 @@ function App() {
         )}
       </header>
 
-      <main>
-        <h2>Datorer till salu</h2>
-        <div className="products-grid">
-          {products.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} width="150" />
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <p className="category">{product.category}</p>
-              <div className="prices">
-                <span>Köp: {product.price} kr</span>
-                <span>Hyra: {product.rentPrice} kr/mån</span>
-              </div>
-              <div className="buttons">
-                <button onClick={() => handleBuy(product)} className="btn-buy">
-                  Köp
-                </button>
-                <button onClick={() => handleRent(product)} className="btn-rent">
-                  Hyra
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+      {showCart && <Cart cart={cart} onBack={() => setShowCart(false)} onRemove={removeFromCart} user={user} />}
 
-        <h2>Dina produkter i butiken</h2>
-        {products.length === 0 ? (
-          <p>Inga produkter än</p>
-        ) : (
-          <div className="products-grid">
-            {products.map((product) => (
-              <div key={product.id} className="product-card">
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                <p className="category">{product.category}</p>
-                <div className="prices">
-                  <span>Köp: {product.price} kr</span>
-                  <span>Hyra: {product.rentPrice} kr/mån</span>
+      <Routes>
+        <Route path="/" element={
+          <main>
+            <h2>Datorer till salu</h2>
+            <div className="products-grid">
+              {products.map((product) => (
+                <div key={product.id} className="product-card">
+                  <img src={product.image} alt={product.name} width="150" />
+                  <h3>{product.name}</h3>
+                  <p>{product.description}</p>
+                  <p className="category">{product.category}</p>
+                  <div className="prices">
+                    <span>Köp: {product.price} kr</span>
+                    <span>Hyra: {product.rentPrice} kr/mån</span>
+                  </div>
+                  <div className="buttons">
+                    <button onClick={() => handleBuy(product)} className="btn-buy">
+                      Köp
+                    </button>
+                    <button onClick={() => handleRent(product)} className="btn-rent">
+                      Hyra
+                    </button>
+                    {user && (
+                      <>
+                        <button onClick={() => navigate(`/edit-product/${product.id}`, { state: { product } })} className="btn-edit">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDelete(product.id)} className="btn-delete">
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                {user && (
-                  <button onClick={() => handleBuy(product)} className="btn-buy">
-                    Köp
-                  </button>
-                )}
+              ))}
+            </div>
+
+            <h2>Dina produkter i butiken</h2>
+            {products.length === 0 ? (
+              <p>Inga produkter än</p>
+            ) : (
+              <div className="products-grid">
+                {products.map((product) => (
+                  <div key={product.id} className="product-card">
+                    <h3>{product.name}</h3>
+                    <p>{product.description}</p>
+                    <p className="category">{product.category}</p>
+                    <div className="prices">
+                      <span>Köp: {product.price} kr</span>
+                      <span>Hyra: {product.rentPrice} kr/mån</span>
+                    </div>
+                    {user && (
+                      <button onClick={() => handleBuy(product)} className="btn-buy">
+                        Köp
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+            )}
+          </main>
+        } />
+        <Route path="/add-product" element={<AddProduct onProductAdded={handleProductChange} />} />
+        <Route path="/edit-product/:id" element={<EditProduct onProductUpdated={handleProductChange} />} />
+      </Routes>
     </div>
   );
 }
